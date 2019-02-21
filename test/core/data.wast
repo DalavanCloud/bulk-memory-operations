@@ -333,3 +333,22 @@
 ;;   (module (memory 1) (data (global.get $g)) (global $g (mut i32) (i32.const 0)))
 ;;   "constant expression required"
 ;; )
+
+;; An initialized data-segment that writes out-of-bounds will still write the
+;; bytes that were in bounds, even though the instantiation failed.
+(module $m
+  (memory (export "mem") 1)
+  (func (export "load8_u") (param i32) (result i32)
+    (i32.load8_u (local.get 0)))
+)
+(register "m" $m)
+
+(assert_unlinkable
+  (module
+    (import "m" "mem" (memory 1))
+    (data (i32.const 0xffff) "\ff\ff")
+  )
+  "data segment does not fit memory"
+)
+
+(assert_return (invoke $m "load8_u" (i32.const 0xffff)) (i32.const 0xff))

@@ -48,7 +48,5 @@ let load tab i =
 let store tab i v =
   try Lib.Array32.set tab.content i v with Invalid_argument _ -> raise Bounds
 
-let blit tab offset elems =
-  let data = Array.of_list elems in
-  try Lib.Array32.blit data 0l tab.content offset (Lib.Array32.length data)
-  with Invalid_argument _ -> raise Bounds
+let init tab offset elems =
+  List.iteri (store tab) elems

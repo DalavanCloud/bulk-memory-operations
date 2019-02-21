@@ -405,7 +405,8 @@ let init_table (inst : module_inst) (seg : table_segment) =
   | Active {index; offset = const; init} ->
     let tab = table inst index in
     let offset = i32 (eval_const inst const) const.at in
-    Table.blit tab offset (List.map (fun x -> FuncElem (func inst x)) init)
+    (try Table.init tab offset (List.map (fun x -> FuncElem (func inst x)) init)
+    with Table.Bounds -> Link.error seg.at "elements segment does not fit table")
   | Passive init -> ()
 
 let init_memory (inst : module_inst) (seg : memory_segment) =
